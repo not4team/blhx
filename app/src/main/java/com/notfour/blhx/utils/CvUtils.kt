@@ -1,5 +1,10 @@
 package com.notfour.blhx.utils
 
+import org.opencv.core.MatOfKeyPoint
+import org.opencv.features2d.FastFeatureDetector
+import org.opencv.imgcodecs.Imgcodecs
+
+
 /**
  * Created with author.
  * Description:
@@ -26,7 +31,17 @@ class CvUtils {
             y2: Int,
             alpha: Int
         ): IntArray {
+            val templateImage = Imgcodecs.imread(picpath)
+            val templateKeyPoints = MatOfKeyPoint()
+            //指定特征点算法SURF
+            val featureDetector = FastFeatureDetector.create()
+            //获取模板图的特征点
+            featureDetector.detect(templateImage, templateKeyPoints);
             return intArrayOf()
+        }
+
+        fun takeScreenShot(): String? {
+            return null
         }
     }
 }
