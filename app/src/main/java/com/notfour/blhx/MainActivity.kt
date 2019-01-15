@@ -14,12 +14,14 @@ import android.support.annotation.RequiresApi
 import android.support.v7.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.Surface
 import android.view.View
 import android.widget.Button
 import com.notfour.blhx.jni.ScreenShotUtils
 import com.notfour.blhx.utils.ExeCommand
 import com.notfour.blhx.utils.FloatWindowManager
+import org.opencv.android.BaseLoaderCallback
+import org.opencv.android.LoaderCallbackInterface
+import org.opencv.android.OpenCVLoader
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -35,16 +37,29 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var mMediaProjection: MediaProjection? = null
     private var mVirtualDisplay: VirtualDisplay? = null
     private lateinit var mMediaProjectionManager: MediaProjectionManager
-    private var mSurface: Surface? = null
     private var mScreenDensity: Int = 0
     private var mScreenWidth: Int = 0
     private var mScreenHeight: Int = 0
     private var mImageReader: ImageReader? = null
 
+    private val mLoaderCallback = object : BaseLoaderCallback(this) {
+        override fun onManagerConnected(status: Int) {
+            when (status) {
+                LoaderCallbackInterface.SUCCESS -> {
+                    Log.i(TAG, "OpenCV loaded successfully")
+                }
+                else -> {
+                    super.onManagerConnected(status)
+                }
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback)
         mBtnStart = findViewById(R.id.btn_start)
         mBtnStop = findViewById(R.id.btn_stop)
         mBtnStart.setOnClickListener(this)
@@ -65,10 +80,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         mScreenWidth = metrics.widthPixels
         mScreenHeight = metrics.heightPixels
         mMediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        startActivityForResult(
-            mMediaProjectionManager.createScreenCaptureIntent(),
-            REQUEST_MEDIA_PROJECTION
-        )
+//        startActivityForResult(
+//            mMediaProjectionManager.createScreenCaptureIntent(),
+//            REQUEST_MEDIA_PROJECTION
+//        )
         val exe = ExeCommand()
         exe.run("su", 1000)
         exe.run("chmod 777 /dev/graphics/fb0", 1000)

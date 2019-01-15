@@ -26,6 +26,7 @@ Java_com_notfour_blhx_jni_ScreenShot_takeScreenshot(
     if (!png) {
         LOGE("error: writing file %s: %s\n",
                 outfile, strerror(errno));
+        env->ReleaseStringUTFChars(out, outfile);
         return 1;
     }
     take_screenshot(fb_in, png);
