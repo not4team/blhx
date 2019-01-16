@@ -19,7 +19,7 @@ import org.opencv.utils.Converters;
 public class Core {
     // these constants are wrapped inside functions to prevent inlining
     private static String getVersion() { return "3.4.1"; }
-    private static String getNativeLibraryName() { return "opencv_java341"; }
+    private static String getNativeLibraryName() { return "opencv_java3"; }
     private static int getVersionMajor() { return 3; }
     private static int getVersionMinor() { return 4; }
     private static int getVersionRevision() { return 1; }

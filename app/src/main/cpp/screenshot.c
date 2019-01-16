@@ -8,7 +8,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <linux/fb.h>
-#include <zlib.h>
 #include <png.h>
 #include "screenshot.h"
 #include <sys/stat.h>
@@ -19,15 +18,15 @@ int take_screenshot(FILE *fb_in, FILE *fb_out) {
     struct fb_var_screeninfo vinfo;
     png_structp png;
     png_infop info;
-    unsigned int r,c,rowlen;
-    unsigned int bytespp,offset;
+    unsigned int r, c, rowlen;
+    unsigned int bytespp, offset;
     fb = fileno(fb_in);
-    if(fb < 0) {
+    if (fb < 0) {
         LOGE("failed to open framebuffer\n");
         return 1;
     }
     fb_in = fdopen(fb, "r");
-    if(ioctl(fb, FBIOGET_VSCREENINFO, &vinfo) < 0) {
+    if (ioctl(fb, FBIOGET_VSCREENINFO, &vinfo) < 0) {
         LOGE("failed to get framebuffer info\n");
         return 1;
     }
@@ -58,7 +57,7 @@ int take_screenshot(FILE *fb_in, FILE *fb_out) {
                  PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
                  PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
     png_write_info(png, info);
-    rowlen=vinfo.xres * bytespp;
+    rowlen = vinfo.xres * bytespp;
     if (rowlen > sizeof(imgbuf)) {
         LOGE("crazy rowlen: %d\n", rowlen);
         png_destroy_write_struct(&png, NULL);
@@ -67,22 +66,28 @@ int take_screenshot(FILE *fb_in, FILE *fb_out) {
     }
     offset = vinfo.xoffset * bytespp + vinfo.xres * vinfo.yoffset * bytespp;
     fseek(fb_in, offset, SEEK_SET);
-    for(r=0; r<vinfo.yres; r++) {
+    for (r = 0; r < vinfo.yres; r++) {
         int len = fread(imgbuf, 1, rowlen, fb_in);
         if (len <= 0) break;
-        png_write_row(png, (png_bytep)imgbuf);
+        png_write_row(png, (png_bytep) imgbuf);
     }
     png_write_end(png, info);
     fclose(fb_in);
     png_destroy_write_struct(&png, NULL);
     return 0;
 }
-void fork_sound(const char* path) {
+
+int switch_euid(uid_t uid) {
+    return seteuid(uid);
+}
+
+void fork_sound(const char *path) {
     pid_t pid = fork();
     if (pid == 0) {
         execl("/system/bin/stagefright", "stagefright", "-o", "-a", path, NULL);
     }
 }
+
 void usage() {
     fprintf(stderr,
             "usage: screenshot [-s soundfile] filename.png\n"
@@ -90,26 +95,33 @@ void usage() {
             "   -i: autoincrement to avoid overwriting filename.png\n"
     );
 }
-int main(int argc, char**argv) {
+
+int main(int argc, char **argv) {
     FILE *png = NULL;
     FILE *fb_in = NULL;
     char outfile[PATH_MAX] = "";
-    char * soundfile = NULL;
+    char *soundfile = NULL;
     int do_increment = 0;
     int c;
     while ((c = getopt(argc, argv, "s:i")) != -1) {
         switch (c) {
-            case 's': soundfile = optarg; break;
-            case 'i': do_increment = 1; break;
+            case 's':
+                soundfile = optarg;
+                break;
+            case 'i':
+                do_increment = 1;
+                break;
             case '?':
             case 'h':
-                usage(); exit(1);
+                usage();
+                exit(1);
         }
     }
     argc -= optind;
     argv += optind;
     if (argc < 1) {
-        usage(); exit(1);
+        usage();
+        exit(1);
     }
     strlcpy(outfile, argv[0], PATH_MAX);
     if (do_increment) {
@@ -131,9 +143,9 @@ int main(int argc, char**argv) {
         exit(1);
     }
     /* switch to non-root user and group */
-//    gid_t groups[] = { AID_LOG, AID_SDCARD_RW };
-//    setgroups(sizeof(groups)/sizeof(groups[0]), groups);
-//    setuid(AID_SHELL);
+    gid_t groups[] = {AID_LOG, AID_SDCARD_RW};
+    setgroups(sizeof(groups) / sizeof(groups[0]), groups);
+    setuid(AID_SHELL);
     png = fopen(outfile, "w");
     if (!png) {
         fprintf(stderr, "error: writing file %s: %s\n",

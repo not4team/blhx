@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string>
+#include <unistd.h>
 #include "screenshot.h"
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -8,6 +9,17 @@ Java_com_notfour_blhx_jni_ScreenShot_stringFromJNI(
         jobject /* this */) {
     std::string hello = "Hello from C++";
     return env->NewStringUTF(hello.c_str());
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_notfour_blhx_jni_ScreenShot_switchUid(
+        JNIEnv *env,
+        jobject /* this */, jint uid) {
+    int state;
+    state = switch_euid((uid_t) uid);
+    if (!state) {
+        LOGE("switch_euid fail");
+    }
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -25,7 +37,7 @@ Java_com_notfour_blhx_jni_ScreenShot_takeScreenshot(
     png = fopen(outfile, "w");
     if (!png) {
         LOGE("error: writing file %s: %s\n",
-                outfile, strerror(errno));
+             outfile, strerror(errno));
         env->ReleaseStringUTFChars(out, outfile);
         return 1;
     }

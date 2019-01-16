@@ -13,6 +13,8 @@ class ScreenShot {
      */
     external fun stringFromJNI(): String
 
+    external fun switchUid(uid: Int)
+
     external fun takeScreenshot(out: String): Int
 
     companion object {
