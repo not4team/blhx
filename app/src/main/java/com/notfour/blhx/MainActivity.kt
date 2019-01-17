@@ -6,10 +6,11 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import com.notfour.blhx.jni.ScreenShotUtils
+import com.notfour.blhx.utils.CvUtils
 import com.notfour.blhx.utils.ExeCommand
 import com.notfour.blhx.utils.FloatWindowManager
 import com.tbruyelle.rxpermissions2.RxPermissions
+import io.reactivex.schedulers.Schedulers
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
@@ -45,15 +46,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.btn_start -> {
                 FloatWindowManager.applyOrShowFloatWindow(this)
                 val rxPermissions = RxPermissions(this)
-                rxPermissions.request(Manifest.permission.WRITE_EXTERNAL_STORAGE).subscribe({ grant ->
-                    if (grant) {
-                        ScreenShotUtils.takeScreenshot("${ScreenShotUtils.SCREENSHOT_DIR}/screen.png")
-                    } else {
-                        Log.e(TAG, "${Manifest.permission.WRITE_EXTERNAL_STORAGE} be denied")
+                rxPermissions.request(Manifest.permission.WRITE_EXTERNAL_STORAGE).subscribeOn(Schedulers.io())
+                    .subscribe({ grant ->
+                        if (grant) {
+//                        ScreenShotUtils.takeScreenshot("${ScreenShotUtils.SCREENSHOT_DIR}/screen.png")
+                            CvUtils.findImageInRegionFuzzy("/sdcard/cvtest/template1.png", 50, 0, 0, 0, 0, 0)
+                        } else {
+                            Log.e(TAG, "${Manifest.permission.WRITE_EXTERNAL_STORAGE} be denied")
+                        }
+                    }) { error ->
+                        error.printStackTrace()
                     }
-                }) { error ->
-                    error.printStackTrace()
-                }
             }
             R.id.btn_stop -> {
                 FloatWindowManager.dismissWindow()
