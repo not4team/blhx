@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     .subscribe({ grant ->
                         if (grant) {
 //                        ScreenShotUtils.takeScreenshot("${ScreenShotUtils.SCREENSHOT_DIR}/screen.png")
-                            CvUtils.findImageInRegionFuzzy("/sdcard/cvtest/template1.png", 50, 0, 0, 0, 0, 0)
+                            CvUtils.findImageMatchTemplate("/sdcard/cvtest/template1.png", 50, 0, 0, 0, 0, 0)
                         } else {
                             Log.e(TAG, "${Manifest.permission.WRITE_EXTERNAL_STORAGE} be denied")
                         }

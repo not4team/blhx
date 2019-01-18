@@ -9,7 +9,6 @@ import org.opencv.core.Scalar
 import org.opencv.features2d.AKAZE
 import org.opencv.features2d.DescriptorMatcher
 import org.opencv.features2d.Features2d
-import org.opencv.features2d.ORB
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import java.util.*
@@ -32,6 +31,7 @@ class CvUtils {
 
         /**
          * 模糊区域找图
+         * 特征点匹配
          * @param picpath-将要寻找的图片文件名
          * @param degree-寻找精度，范围：1 ~ 100，当是100时为完全匹配
          * @param x1,y1-欲寻找的区域左上角顶点屏幕坐标
@@ -39,7 +39,7 @@ class CvUtils {
          * @param alpha-忽略的颜色值（透明色） 若无请填 0
          * @return 找到的图片的左上角顶点坐标，如未找到则返回 -1，-1
          */
-        fun findImageInRegionFuzzy(
+        fun findImageMatchFeature(
             picPath: String,
             degree: Int,
             x1: Int,
@@ -49,7 +49,7 @@ class CvUtils {
             alpha: Int
         ): Pair<Int, Int> {
             val startTime = SystemClock.currentThreadTimeMillis()
-            Log.e(TAG, "findImageInRegionFuzzy start time ${startTime}")
+            Log.e(TAG, "findImageMatchFeature start time ${startTime}")
             val picMat = Imgcodecs.imread(picPath)
             val screenPath = "/sdcard/cvtest/screen.png"
 //            ScreenShotUtils.takeScreenshot(screenPath)
@@ -134,12 +134,68 @@ class CvUtils {
             Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/screen_cv.png", imgMatches)
 
             val endTime = SystemClock.currentThreadTimeMillis()
-            Log.e(TAG, "findImageInRegionFuzzy end time ${endTime}")
-            Log.e(TAG, "findImageInRegionFuzzy total time ${(endTime - startTime) / 1000}")
+            Log.e(TAG, "findImageMatchFeature end time ${endTime}")
+            Log.e(TAG, "findImageMatchFeature total time ${(endTime - startTime) / 1000}s")
             if (percent * 100 < degree) {
                 return Pair(-1, -1)
             }
             return Pair(pointA.x.toInt(), pointA.y.toInt())
+        }
+
+        /**
+         * 模糊区域找图
+         * 模板匹配
+         * @param picpath-将要寻找的图片文件名
+         * @param degree-寻找精度，范围：1 ~ 100，当是100时为完全匹配
+         * @param x1,y1-欲寻找的区域左上角顶点屏幕坐标
+         * @param x2,y2-欲寻找的区域右下角顶点屏幕坐标
+         * @param alpha-忽略的颜色值（透明色） 若无请填 0
+         * @return 找到的图片的左上角顶点坐标，如未找到则返回 -1，-1
+         */
+        fun findImageMatchTemplate(
+            picPath: String,
+            degree: Int,
+            x1: Int,
+            y1: Int,
+            x2: Int,
+            y2: Int,
+            alpha: Int
+        ): Pair<Int, Int> {
+            val startTime = SystemClock.currentThreadTimeMillis()
+            Log.e(TAG, "findImageMatchTemplate start time ${startTime}")
+            var match_method = Imgproc.TM_SQDIFF
+            val screenPath = "/sdcard/cvtest/screen.png"
+            val img = Imgcodecs.imread(screenPath)
+            val templ = Imgcodecs.imread(picPath)
+            val result = Mat()
+            val img_display = Mat()
+            img.copyTo(img_display)
+            val result_cols = img.cols() - templ.cols() + 1
+            val result_rows = img.rows() - templ.rows() + 1
+            result.create(result_rows, result_cols, CvType.CV_32FC1)
+            Imgproc.matchTemplate(img, templ, result, match_method)
+            Core.normalize(result, result, 0.0, 1.0, Core.NORM_MINMAX, -1, Mat())
+            var matchLoc: Point? = null
+            val mmr = Core.minMaxLoc(result)
+            if (match_method === Imgproc.TM_SQDIFF || match_method === Imgproc.TM_SQDIFF_NORMED) {
+                matchLoc = mmr.minLoc
+            } else {
+                matchLoc = mmr.maxLoc
+            }
+            Imgproc.rectangle(
+                img_display, matchLoc, Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),
+                Scalar(0.0, 0.0, 0.0), 2, 8, 0
+            )
+            Imgproc.rectangle(
+                result, matchLoc, Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),
+                Scalar(0.0, 0.0, 0.0), 2, 8, 0
+            )
+            Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/img_display_cv.png", img_display)
+            Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/result_cv.png", result)
+            val endTime = SystemClock.currentThreadTimeMillis()
+            Log.e(TAG, "findImageMatchTemplate end time ${endTime}")
+            Log.e(TAG, "findImageMatchTemplate total time ${(endTime - startTime) / 1000}s")
+            return Pair(matchLoc.x.toInt(), matchLoc.y.toInt())
         }
     }
 }
