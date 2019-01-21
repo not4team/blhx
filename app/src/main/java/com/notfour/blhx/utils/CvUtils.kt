@@ -163,7 +163,7 @@ class CvUtils {
         ): Pair<Int, Int> {
             val startTime = SystemClock.currentThreadTimeMillis()
             Log.e(TAG, "findImageMatchTemplate start time ${startTime}")
-            var match_method = Imgproc.TM_SQDIFF
+            var match_method = Imgproc.TM_CCORR_NORMED
             val screenPath = "/sdcard/cvtest/screen.png"
             val img = Imgcodecs.imread(screenPath)
             val templ = Imgcodecs.imread(picPath)
@@ -182,16 +182,17 @@ class CvUtils {
             } else {
                 matchLoc = mmr.maxLoc
             }
+            Log.e(TAG, "matchLoc x:${matchLoc.x},y:${matchLoc.y}")
             Imgproc.rectangle(
-                img_display, matchLoc, Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),
-                Scalar(0.0, 0.0, 0.0), 2, 8, 0
+                img, matchLoc, Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),
+                Scalar(0.0, 255.0, 0.0), 2, 8, 0
             )
-            Imgproc.rectangle(
-                result, matchLoc, Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),
-                Scalar(0.0, 0.0, 0.0), 2, 8, 0
-            )
-            Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/img_display_cv.png", img_display)
-            Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/result_cv.png", result)
+//            Imgproc.rectangle(
+//                result, matchLoc, Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),
+//                Scalar(0.0, 0.0, 0.0), 2, 8, 0
+//            )
+            Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/img_display_cv.png", img)
+//            Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/result_cv.png", result)
             val endTime = SystemClock.currentThreadTimeMillis()
             Log.e(TAG, "findImageMatchTemplate end time ${endTime}")
             Log.e(TAG, "findImageMatchTemplate total time ${(endTime - startTime) / 1000}s")

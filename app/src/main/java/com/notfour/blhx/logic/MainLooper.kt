@@ -10,6 +10,7 @@ object MainLooper {
     var run = true
     fun looper() {
         while (run) {
+            //判断是否在主界面
 
         }
     }
