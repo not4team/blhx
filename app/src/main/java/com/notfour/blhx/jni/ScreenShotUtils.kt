@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.Rect
 import android.os.Build
 import android.os.Environment
-import android.util.Log
 import android.view.Surface
 import com.notfour.blhx.utils.ExeCommand
 import java.io.File
@@ -23,14 +22,17 @@ object ScreenShotUtils {
     val screenShot = ScreenShot()
 
     fun takeScreenshot(out: String) {
-        val state = screenShot.takeScreenshot(out)
-        if (state > 0) {
-            Log.e(TAG, "take screenshot fail")
+//        val state = screenShot.takeScreenshot(out)
+//        if (state > 0) {
+//            Log.e(TAG, "take screenshot fail")
             ExeCommand().run("screencap -p ${out}", 1000)
 //            screenshot(1920, 1080, out)
-        }
+//        }
     }
 
+    /**
+     * 系统代码检测uid,故失败
+     */
     fun screenshot(width: Int, height: Int, out: String) {
         val clazz = Class.forName("android.view.SurfaceControl")
         var method: Method?

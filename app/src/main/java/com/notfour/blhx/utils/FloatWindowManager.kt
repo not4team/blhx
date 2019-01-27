@@ -31,7 +31,7 @@ object FloatWindowManager {
     private var windowManager: WindowManager? = null
     private lateinit var mParams: WindowManager.LayoutParams
     private lateinit var floatView: FloatBall
-    private lateinit var dialog: Dialog
+    private var dialog: Dialog? = null
     private var mFloatBallClickListener: (view: FloatBall) -> Unit = {}
 
     init {
@@ -215,8 +215,8 @@ object FloatWindowManager {
     }
 
     private fun showConfirmDialog(context: Context, message: String, result: OnConfirmResult) {
-        if (dialog != null && dialog.isShowing) {
-            dialog.dismiss()
+        if (dialog != null && dialog!!.isShowing) {
+            dialog!!.dismiss()
         }
 
         dialog = AlertDialog.Builder(context).setCancelable(true).setTitle("")
@@ -232,7 +232,7 @@ object FloatWindowManager {
                 result.confirmResult(false)
                 dialog.dismiss()
             }.create()
-        dialog.show()
+        dialog!!.show()
     }
 
     private interface OnConfirmResult {

@@ -164,7 +164,8 @@ class CvUtils {
             val startTime = SystemClock.currentThreadTimeMillis()
             Log.e(TAG, "findImageMatchTemplate start time ${startTime}")
             var match_method = Imgproc.TM_CCORR_NORMED
-            val screenPath = "/sdcard/cvtest/screen.png"
+            val screenPath = "${ScreenShotUtils.SCREENSHOT_DIR}/screen.png"
+            ScreenShotUtils.takeScreenshot(screenPath)
             val img = Imgcodecs.imread(screenPath)
             val templ = Imgcodecs.imread(picPath)
             val result = Mat()
@@ -191,6 +192,7 @@ class CvUtils {
 //                result, matchLoc, Point(matchLoc.x + templ.cols(), matchLoc.y + templ.rows()),
 //                Scalar(0.0, 0.0, 0.0), 2, 8, 0
 //            )
+            Log.e(TAG, "findImageMatchTemplate save dir is ${ScreenShotUtils.SCREENSHOT_DIR}")
             Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/img_display_cv.png", img)
 //            Imgcodecs.imwrite("${ScreenShotUtils.SCREENSHOT_DIR}/result_cv.png", result)
             val endTime = SystemClock.currentThreadTimeMillis()
